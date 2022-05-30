@@ -5,7 +5,7 @@ import { Header } from '../components/Header';
 import { Dashboard } from '../screens/Dashboard';
 import { DailyTrainning } from '../screens/DailyTrainning';
 import { TrainningDetail } from '../screens/DailyTrainning/TrainningDetail';
-
+  
 import { useWorkout } from '../hooks/workout';
 
 const AppStack = createNativeStackNavigator();
