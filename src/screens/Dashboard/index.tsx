@@ -1,6 +1,8 @@
-import { useNavigation } from '@react-navigation/native';
-
+import { isSameDay } from 'date-fns';
+import { useState } from 'react';
 import Dumbbell from '../../assets/dumbbell.png';
+import { useOption } from '../../hooks/option';
+import { useWorkout } from '../../hooks/workout';
 
 import { 
   Background, 
@@ -11,21 +13,28 @@ import {
 } from './styles';
 
 export function Dashboard() {
-  const navigation = useNavigation();
+  const { lastDate, startWorkout } = useWorkout();
+  const { chooseOption } = useOption();
 
-  function handleStart() {
-    console.log(
-      'Aqui vai a lógica de iniciar o treino do dia, enviando o horário para o banco de dados. Após iniciar o treino o usuário não pode voltar para esta tela.'
-    );
-    navigation.navigate('Treino do dia');
+  const handleStart = (option: string) => {
+    chooseOption(option);
+    startWorkout();
   }
 
   return (
     <Container>
       <Background source={Dumbbell}>
         <Body>
-          <Button onPress={() => handleStart()}>
-            <ButtonText>INICIAR TREINO</ButtonText>
+          <Button onPress={() => handleStart('A')}>
+            <ButtonText>{isSameDay(lastDate, new Date()) ? 'VOCE JA TREINOU HOJE' : 'INICIAR TREINO A'}</ButtonText>
+          </Button>
+
+          <Button onPress={() => handleStart('B')}>
+            <ButtonText>{isSameDay(lastDate, new Date()) ? 'VOCE JA TREINOU HOJE' : 'INICIAR TREINO B'}</ButtonText>
+          </Button>
+
+          <Button onPress={() => handleStart('C')}>
+            <ButtonText>{isSameDay(lastDate, new Date()) ? 'VOCE JA TREINOU HOJE' : 'INICIAR TREINO C'}</ButtonText>
           </Button>
         </Body>
       </Background>

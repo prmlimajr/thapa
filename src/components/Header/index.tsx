@@ -20,7 +20,7 @@ export function Header() {
       <Logo source={LadSoft} />
 
       <GreetingContainer>
-        <Greeting>Bem vindo, {user.name || 'Usuário'}</Greeting>
+        <Greeting>Bem vindo, {user.first_name || 'Usuário'}</Greeting>
 
         <Button onPress={() => signOut()}>
           <ButtonText>Sair</ButtonText>

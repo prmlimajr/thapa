@@ -67,10 +67,7 @@ export function SignIn() {
           />
 
           <Button
-            onPress={() => {
-              console.log('click')
-              handleLogin(email, password)
-            }}
+            onPress={() => handleLogin(email, password)}
           >
             <Feather name='log-in' size={20} color='#000' />
 

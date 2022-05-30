@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import YoutubePlayer from "react-native-youtube-iframe";
+import React, { useEffect, useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import Sports from '../../../assets/sport.png';
@@ -19,16 +20,57 @@ import {
   TitleContainer, 
   Top 
 } from './styles';
+import { api } from "../../../services/api";
+import { useWorkout } from "../../../hooks/workout";
+
+interface Workout {
+  exe_name: string;
+  id: number;
+  img_path: string;
+  img_type: string;
+}
 
 export function TrainningDetail() {
   const [load, setLoad] = useState(null);
+  const [trainning, setTrainning] = useState<Workout>({} as Workout);
 
   const navigation = useNavigation();
-  const route = useRoute();
+  const { workout } = useWorkout();
 
-  const trainning = route.params.trainning;
+  
+  useEffect(() => {
+    async function getWorkout() {
+      try {
+        const {data} = await api.get(`/exercises/${workout.exercise_id}`);
+        
+        setTrainning(data);
+      } catch (err) {
+        Alert.alert(
+          'Falha na conexão',
+          'Não foi possível carregar o seu treino.'
+        );    
+      }
+    }
 
-  console.log({ trainning });
+    getWorkout();
+  }, [])
+
+  const handleCompleteTask = () => {
+    async function completeTask() {
+      try {
+        await api.put(`/workout/update/${workout.exercise_id}`, { load })
+      } catch (err) {
+        Alert.alert(
+          'Falha na conexão',
+          'Não foi possível concluir o treino.'
+        );    
+      }
+    }
+
+    completeTask();
+    navigation.navigate('Treino do dia');
+  }
+
   return (
     <Container>
       <Top>
@@ -43,21 +85,32 @@ export function TrainningDetail() {
             color='#3A362D'
             onPress={() => navigation.goBack()}
           />
-          <Title>{trainning.description}</Title>
+          <Title>{workout.exercise_name}</Title>
           <View style={{ width: 20 }}></View>
         </TitleContainer>
       </Top>
 
-      <Background source={Sports} />
+      {trainning.img_type === 'video' && (
+        <YoutubePlayer
+          height={300}
+          play={true}
+          videoId={trainning.img_path}
+          initialPlayerParams={{
+            controls: false,
+            loop: true,
+            preventFullScreen: true,
+          }}
+        />
+      )}
 
       <Bottom>
         <DataContainer>
-          <DataText>Séries: {trainning.series}</DataText>
+          <DataText>Séries: {workout.sets}</DataText>
           <DataText>
-            Repetições: {trainning.repetitions}
+            Repetições: {workout.repetitions}
           </DataText>
           <DataText>
-            Intervalo: {trainning.interval} segundos
+            Intervalo: 60 segundos
           </DataText>
           <Row>
             <DataText>Carga executada:</DataText>
@@ -69,7 +122,7 @@ export function TrainningDetail() {
           </Row>
         </DataContainer>
 
-        <Button>
+        <Button onPress={() => handleCompleteTask()}>
           <ButtonText>ENVIAR</ButtonText>
         </Button>
       </Bottom>

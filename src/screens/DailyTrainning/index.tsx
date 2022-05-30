@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 import { Loader } from '../../components/Loader';
 import { EmptyList } from '../../components/EmptyList';
 
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { 
   Button, 
   ButtonText, 
@@ -16,15 +16,21 @@ import {
   ListCell, 
   ListItem 
 } from './styles';
+import { useWorkout } from '../../hooks/workout';
+import { api } from '../../services/api';
+import { useOption } from '../../hooks/option';
+import { Splash } from '../../components/Splash';
 
 interface Training {
   id: number;
-  description: string;
+  exercise_id: number;
+  exercise_name: string;
+  workout_type: string;
+  prescribed_at: Date;
+  expiration_date: Date;
+  sets: number;
   repetitions: number;
-  interval: number;
-  series: number;
-  load: number;
-  img: string;
+  exe_load?: number;
 }
 
 export function DailyTrainning() {
@@ -32,82 +38,27 @@ export function DailyTrainning() {
   const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
-
+  const { finishWorkout, chooseWorkout } = useWorkout();
+  const { option } = useOption();
+  
   useEffect(() => {
+    async function getDailyTrainning() {
+      try {
+        const {data} = await api.get(`/workout/${option}`);
+
+        setDailyTrainning(data)
+      } catch (err) {
+        Alert.alert(
+          'Falha na conexão',
+          'Não foi possível carregar o seu treino.'
+        );    
+      }
+    }
+
     try {
       setLoading(true);
       
-      function getDailyTrainning(userId) {
-        setTimeout(() => {}, 2000);
-
-        return [
-          {
-            id: 1,
-            description: 'Supino reto c/ halteres',
-            repetitions: 15,
-            interval: 60,
-            series: 4,
-            load: 2,
-            img: 'src/assets/sport.png',
-          },
-          {
-            id: 2,
-            description: 'Supino incl. c/ barra',
-            repetitions: 15,
-            interval: 60,
-            series: 4,
-            load: 3,
-            img: 'src/assets/sport.png',
-          },
-          {
-            id: 3,
-            description: 'Puxada supinada',
-            repetitions: 15,
-            interval: 60,
-            series: 4,
-            load: 2,
-            img: 'src/assets/sport.png',
-          },
-          {
-            id: 4,
-            description: 'Remada c/ barra neutra',
-            repetitions: 15,
-            interval: 60,
-            series: 4,
-            load: null,
-            img: 'src/assets/sport.png',
-          },
-          {
-            id: 5,
-            description: 'Voador',
-            repetitions: 15,
-            interval: 60,
-            series: 4,
-            load: null,
-            img: 'src/assets/sport.png',
-          },
-          {
-            id: 6,
-            description: 'Tríceps na polia',
-            repetitions: 15,
-            interval: 60,
-            series: 4,
-            load: null,
-            img: 'src/assets/sport.png',
-          },
-          {
-            id: 7,
-            description: 'Tríceps c/ corda',
-            repetitions: 15,
-            interval: 60,
-            series: 4,
-            load: null,
-            img: 'src/assets/sport.png',
-          },
-        ];
-      }
-
-      setDailyTrainning(getDailyTrainning(1));
+      getDailyTrainning();
     } catch (err) {
       Alert.alert(
         'Falha na conexão',
@@ -118,10 +69,14 @@ export function DailyTrainning() {
     }
   }, []);
 
+  const handleFinishWorkout = () => {
+    finishWorkout();
+  }
+
   return (
     <>
       <Loader loading={loading} />
-      
+
       <Container>
         <View>
           <HeaderText>Seu treino hoje é:</HeaderText>
@@ -138,14 +93,14 @@ export function DailyTrainning() {
             renderItem={({ item: trainning }) => (
               <>
                 <ListCell>
-                  <ListItem>{trainning.description}</ListItem>
-                  {!trainning.load ? (
+                  <ListItem>{trainning.exercise_name}</ListItem>
+                  {!trainning.exe_load ? (
                     <MaterialIcons
                       name='add'
                       size={26}
                       color='#3A362D'
                       onPress={() =>
-                        navigation.navigate('Exercício', { trainning })
+                        chooseWorkout(trainning)
                       }
                     />
                   ) : (
@@ -164,7 +119,7 @@ export function DailyTrainning() {
           />
         )}
 
-        <Button>
+        <Button onPress={() => handleFinishWorkout()}>
           <ButtonText>CONCLUIR TREINO</ButtonText>
         </Button>
       </Container>
